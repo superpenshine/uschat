@@ -67,7 +67,7 @@ def sendmeg(currtime, room_name, username, meg):
     if username == 'admin':
         message1 = meg + '\n'
     else:
-        message1 = "[%s][%s][%s]: [%s]  \n" %(room_name, currtime, username, meg)
+        message1 = "[%s][%s][%s]: [%s]\n\n" %(room_name, currtime, username, meg)
     for room in ROOM_LIST:
         if room_name == room.roomname:
             broadcast_list = room.roommate
@@ -124,14 +124,9 @@ def delete(room_name, user6):
             if room.creator != user6['address']:
                 return "\n[Error, you are not able to delete this room.]\n\n"
             room.creator = ADDRESS
-            print "the room mate are: "
-            print room.roommate
-            for client1 in room.roommate:
+            while room.roommate:
                 for temp13 in CLIENT_LIST:
-                    print client1
-                    print " and "
-                    print temp13['address']
-                    if client1 == temp13['address']:
+                    if room.roommate[0] == temp13['address']:
                         print "delete: " + str(times)
                         room.quitroom(temp13['address'])
                         ROOM_LIST[0].joinroom(temp13['address'])
@@ -141,6 +136,7 @@ def delete(room_name, user6):
                         times = times + 1
                         break
             room.roomname = ''
+            room.roomnum = 0
             print "after delete the room mate is: "
             print room.roommate
             return "\n[You delete room %s successfully.]\n\n" % room_name
@@ -195,6 +191,7 @@ def block(block_name, user3):
                             temp1['room'] = ROOM_LIST[0].roomnum
                             temp1['socket'].send("\n[You have been remove from room.]\n\n")
                             return "\n[block user success]\n\n"
+            room.add_block(blocked_user['address'])
             return "\n[He/she is not in room. He/She would not be able to join this room.]\n\n"
     return "\n[Error, there is no such room.]\n\n"
 
@@ -248,7 +245,7 @@ def find_who(user_address):
             return client1['name']
 
 S = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-HOST = '142.104.185.164'
+HOST = socket.gethostname()
 PORT = 10000
 ADDRESS = (HOST, PORT)
 
@@ -272,7 +269,7 @@ CONNECT_LIST.append(S)
 while True:
     READ, WRITE, ERROR = select.select(CONNECT_LIST, [], [])
     for connect in READ:
-        tm = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime())
+        tm = time.strftime('%m-%d %H:%M:%S', time.localtime())
         if connect == S:
             client, addr = S.accept()
             CONNECT_LIST.append(client)
@@ -290,7 +287,6 @@ while True:
             USER = {'address':(0, 0), 'name':'User_Name', 'room':0, 'socket':''}
             INDEX = INDEX + 1
         else:
-            print 'receiving form client'
             for temp7 in CLIENT_LIST:
                 if connect == temp7['socket']:
                     tempuser = temp7

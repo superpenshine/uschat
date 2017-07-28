@@ -21,7 +21,7 @@ def send(actions, msgs):
 #HOST = '134.87.190.80'
 #HOST = '192.168.56.1'
 #HOST = '10.255.255.174'
-HOST = '142.104.185.164'
+HOST = socket.gethostname()
 PORT = 10000
 ADDRESS = (HOST, PORT)
 MSG = ''
@@ -33,24 +33,26 @@ print "================="
 while True:
     #receive()
     READ_LIST = [sys.stdin, S]
+    #sys.stdout.write('\n[You]: ')
     READ, WRITE, ERROR = select.select(READ_LIST, [], [])
     for sock in READ:
         if sock == S:
-            data = sock.recv(1024)
-            if not data:
-                print '\n disconncted from server.'
-                sys.exit()
-            else:
-                sys.stdout.write(data)
+            try: 
+                data = sock.recv(1024)
+                if data:
+                    sys.stdout.write(data)
                 #sys.stdout.write('\n[You]: ')
-                sys.stdout.flush()
+                    sys.stdout.flush()
+                else:
+                    print "disconnected"
+                    sys.exit()
+            except:
+                sys.exit()
         else:
-
             userinput = sys.stdin.readline()
             input_split = userinput.split(" ")
             if len(input_split) > 1:
                 MSG = str(input_split[1:])
-
             #aprint ("ok" + userinput)
 
             if input_split[0] == "/quit":
@@ -72,7 +74,11 @@ while True:
                 action = '00'
                 MSG = input_split[0:]
                 MSG = reduce((lambda x, y: x+' '+y), MSG)
-            send(action, MSG)
+            try:
+                send(action, MSG)
+            except:
+                print "disconnected"
+                sys.exit()
             #sys.stdout.write(userinput)
             sys.stdout.flush()
             #print "finish"
